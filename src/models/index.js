@@ -5,10 +5,10 @@ const Category = require('./Category');
 const PasswordReset = require('./PasswordReset');
 
 const models = {
-    Admin,
-    User,
-    Category,
-    PasswordReset
+  Admin,
+  User,
+  Category,
+  PasswordReset,
 };
 
 // Associations
