@@ -1,12 +1,12 @@
-const bcrypt = require('bcrypt');
-const { User } = require('../models');
-const multer = require('multer');
-const path = require('path');
+const bcrypt = require("bcrypt");
+const { User } = require("../models");
+const multer = require("multer");
+const path = require("path");
 
 // Cấu hình multer để upload avatar
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/avatars/');
+    cb(null, "uploads/avatars/");
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
@@ -23,7 +23,7 @@ const upload = multer({
     if (extname && mimetype) {
       return cb(null, true);
     }
-    cb(new Error('Only images (jpeg, jpg, png) are allowed'));
+    cb(new Error("Only images (jpeg, jpg, png) are allowed"));
   },
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
@@ -31,15 +31,15 @@ const upload = multer({
 const getProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
-      attributes: ['id', 'username', 'email', 'full_name', 'avatar', 'status'],
+      attributes: ["id", "username", "email", "full_name", "avatar", "status"],
     });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
     res.json(user);
   } catch (error) {
-    console.error('Get profile error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Get profile error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -48,14 +48,14 @@ const updateProfile = async (req, res) => {
     const { username, full_name } = req.body;
     const user = await User.findByPk(req.user.id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Kiểm tra username mới
     if (username && username !== user.username) {
       const existingUsername = await User.findOne({ where: { username } });
       if (existingUsername) {
-        return res.status(400).json({ message: 'Username already exists' });
+        return res.status(400).json({ message: "Username already exists" });
       }
     }
 
@@ -71,10 +71,10 @@ const updateProfile = async (req, res) => {
     }
 
     await user.update(updateData);
-    res.json({ message: 'Profile updated successfully' });
+    res.json({ message: "Profile updated successfully" });
   } catch (error) {
-    console.error('Update profile error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Update profile error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -84,29 +84,97 @@ const changePassword = async (req, res) => {
     if (!currentPassword || !newPassword) {
       return res
         .status(400)
-        .json({ message: 'Current and new password are required' });
+        .json({ message: "Current and new password are required" });
     }
 
     const user = await User.findByPk(req.user.id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Kiểm tra mật khẩu hiện tại
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Current password is incorrect' });
+      return res.status(400).json({ message: "Current password is incorrect" });
     }
 
     // Hash mật khẩu mới
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await user.update({ password: hashedPassword });
 
-    res.json({ message: 'Password changed successfully' });
+    res.json({ message: "Password changed successfully" });
   } catch (error) {
-    console.error('Change password error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Change password error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-module.exports = { getProfile, updateProfile, upload, changePassword };
+const getUsers = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, status } = req.query;
+    const offset = (page - 1) * limit;
+
+    const where = status ? { status } : {};
+
+    const { count, rows } = await User.findAndCountAll({
+      where,
+      offset: parseInt(offset),
+      limit: parseInt(limit),
+      attributes: [
+        "id",
+        "username",
+        "email",
+        "full_name",
+        "status",
+        "created_at",
+        "updated_at",
+      ],
+    });
+
+    res.json({
+      total: count,
+      pages: Math.ceil(count / limit),
+      currentPage: parseInt(page),
+      data: rows,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const lockUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const newStatus = user.status === "active" ? "locked" : "active";
+    await user.update({ status: newStatus });
+
+    res.json({ message: `User ${newStatus} successfully`, user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await user.destroy();
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { getProfile, updateProfile, upload, changePassword, getUsers, lockUser, deleteUser };
