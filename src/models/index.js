@@ -1,12 +1,17 @@
 const sequelize = require('../config/database');
-   const Admin = require('./Admin');
-   const User = require('./User');
-   const Category = require('./Category');
+const Admin = require('./Admin');
+const User = require('./User');
+const Category = require('./Category');
+const PasswordReset = require('./PasswordReset');
 
-   const models = {
-       Admin,
-       User,
-       Category
-   };
+const models = {
+    Admin,
+    User,
+    Category,
+    PasswordReset
+};
 
-   module.exports = { sequelize, ...models };
+// Associations
+PasswordReset.belongsTo(User, { foreignKey: 'email', targetKey: 'email' });
+
+module.exports = { sequelize, ...models };
