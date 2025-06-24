@@ -13,7 +13,7 @@ const {
   deleteCategory,
 } = require("../controllers/categoryController");
 const {
-  getCourses,
+  getAdminCourses, // Đảm bảo import đúng tên
   createCourse,
   updateCourse,
   deleteCourse,
@@ -47,7 +47,7 @@ router.put("/categories/:id", authenticateToken, isAdmin, updateCategory);
 router.delete("/categories/:id", authenticateToken, isAdmin, deleteCategory);
 
 // Admin course management
-router.get("/courses", authenticateToken, isAdmin, getCourses);
+router.get("/courses", authenticateToken, isAdmin, getAdminCourses); // Kiểm tra lại dòng này
 router.post(
   "/courses",
   authenticateToken,
@@ -62,7 +62,7 @@ router.put(
   upload.single("thumbnail"),
   updateCourse
 );
-router.delete("/courses/:id", authenticateToken, isAdmin, deleteCourse);
+router.delete("/admin/courses/:id", authenticateToken, isAdmin, deleteCourse);
 
 // Admin chapter management
 router.get(

@@ -1,7 +1,45 @@
 const { Course, Category } = require("../models");
 const path = require("path");
 
-const getCourses = async (req, res) => {
+const getPublicCourses = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Course.findAndCountAll({
+      where: { status: "active" }, // Chỉ lấy khóa học active
+      offset: parseInt(offset),
+      limit: parseInt(limit),
+      attributes: [
+        "id",
+        "title",
+        "description",
+        "category_id",
+        "thumbnail",
+        "created_at",
+        "updated_at",
+      ],
+      include: [{ model: Category, attributes: ["name"] }],
+    });
+
+    res.json({
+      total: count,
+      pages: Math.ceil(count / limit),
+      currentPage: parseInt(page),
+      data: rows.map((course) => ({
+        ...course.toJSON(),
+        thumbnail: course.thumbnail
+          ? `${req.protocol}://${req.get("host")}/uploads/${course.thumbnail}`
+          : null,
+      })),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const getAdminCourses = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
@@ -118,4 +156,10 @@ const deleteCourse = async (req, res) => {
   }
 };
 
-module.exports = { getCourses, createCourse, updateCourse, deleteCourse };
+module.exports = {
+  getPublicCourses,
+  getAdminCourses,
+  createCourse,
+  updateCourse,
+  deleteCourse,
+};

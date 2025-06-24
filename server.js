@@ -6,6 +6,7 @@ const adminRoutes = require('./src/routes/adminRoutes');
 const authRoutes = require('./src/routes/auth');
 const userRoutes = require('./src/routes/user');
 const path = require('path');
+const courseRoutes = require('./src/routes/courseRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -29,9 +30,10 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Setup routes với prefix đúng
-app.use('/auth', authRoutes);      // /auth/login, /auth/register, /auth/logout
-app.use('/users', userRoutes);     // /users/profile, /users/change-password
-app.use('/admin', adminRoutes);    // /admin/login, /admin/users, etc.
+app.use('/auth', authRoutes);      
+app.use('/users', userRoutes);     
+app.use('/admin', adminRoutes);    
+app.use('/api', courseRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
