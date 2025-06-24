@@ -1,13 +1,24 @@
 const { Course, Category } = require("../models");
 const path = require("path");
+const { Op } = require("sequelize");
 
 const getPublicCourses = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, categoryId, search } = req.query;
     const offset = (page - 1) * limit;
 
+    const where = { status: "active" };
+
+    if (categoryId) {
+      where.category_id = parseInt(categoryId);
+    }
+
+    if (search) {
+      where.title = { [Op.like]: `%${search}%` }; // ✅ dùng Op.like nếu là MySQL
+    }
+
     const { count, rows } = await Course.findAndCountAll({
-      where: { status: "active" }, // Chỉ lấy khóa học active
+      where,
       offset: parseInt(offset),
       limit: parseInt(limit),
       attributes: [
@@ -20,6 +31,7 @@ const getPublicCourses = async (req, res) => {
         "updated_at",
       ],
       include: [{ model: Category, attributes: ["name"] }],
+      order: [["created_at", "DESC"]],
     });
 
     res.json({
@@ -38,6 +50,8 @@ const getPublicCourses = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
 
 const getAdminCourses = async (req, res) => {
   try {
