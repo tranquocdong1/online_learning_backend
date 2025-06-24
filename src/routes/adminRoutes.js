@@ -6,9 +6,9 @@ const { authenticateToken, isAdmin } = require('../middlewares/auth');
 
 // Admin authentication
 router.post('/login', login);
-router.post('/refresh-token', refreshToken);
+router.post('/refresh-token', refreshToken); // TODO: Add validation for refresh token
 
-// Admin user management - chỉ dành cho admin
+// Admin user management
 router.get('/users', authenticateToken, isAdmin, getUsers);
 router.patch('/users/:id/lock', authenticateToken, isAdmin, lockUser);
 router.delete('/users/:id', authenticateToken, isAdmin, deleteUser);
