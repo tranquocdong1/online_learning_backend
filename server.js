@@ -28,11 +28,10 @@ app.use(express.json());
 // Routes
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.use('/admin', adminRoutes);
-app.use('/admin', userRoutes);
-
-app.use('/auth', authRoutes);
-app.use('/users', userRoutes);
+// Setup routes với prefix đúng
+app.use('/auth', authRoutes);      // /auth/login, /auth/register, /auth/logout
+app.use('/users', userRoutes);     // /users/profile, /users/change-password
+app.use('/admin', adminRoutes);    // /admin/login, /admin/users, etc.
 
 // Basic route
 app.get('/', (req, res) => {
