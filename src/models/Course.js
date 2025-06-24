@@ -31,7 +31,7 @@ const Course = sequelize.define(
       allowNull: true,
     },
     status: {
-      type: DataTypes.ENUM("active", "inactive"),
+      type: DataTypes.ENUM("active", "hidden"),
       defaultValue: "active",
     },
     created_at: {
