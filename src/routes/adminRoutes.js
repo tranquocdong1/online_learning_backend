@@ -75,12 +75,14 @@ router.post(
   "/courses/:courseId/chapters",
   authenticateToken,
   isAdmin,
+  upload.none(),
   createChapter
 );
 router.put(
   "/courses/:courseId/chapters/:id",
   authenticateToken,
   isAdmin,
+  upload.none(),
   updateChapter
 );
 router.delete(
