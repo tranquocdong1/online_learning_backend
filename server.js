@@ -25,22 +25,17 @@ app.use(
 // Middleware to parse JSON
 app.use(express.json());
 
-// Serve static files
+// Routes
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
-app.use('/auth', authRoutes); // /auth/login, /auth/register, /auth/logout
-app.use('/user', userRoutes); // /user/profile, /user/change-password
-app.use('/admin', adminRoutes); // /admin/login, /admin/users, etc.
+// Setup routes với prefix đúng
+app.use('/auth', authRoutes);      // /auth/login, /auth/register, /auth/logout
+app.use('/users', userRoutes);     // /users/profile, /users/change-password
+app.use('/admin', adminRoutes);    // /admin/login, /admin/users, etc.
 
 // Basic route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the Online Learning System API' });
-});
-
-// Handle 404
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
 });
 
 // Sync database
