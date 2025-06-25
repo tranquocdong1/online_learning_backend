@@ -9,6 +9,7 @@ const path = require('path');
 const courseRoutes = require('./src/routes/courseRoutes');
 const categoryRoutes = require('./src/routes/categoryRoutes');
 const contentRoutes = require('./src/routes/contentRoutes');
+const progressRoutes = require('./src/routes/progressRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +39,7 @@ app.use('/admin', adminRoutes);
 app.use('/api', courseRoutes);
 app.use('/api', categoryRoutes);
 app.use('/api', contentRoutes);
+app.use('/api', progressRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

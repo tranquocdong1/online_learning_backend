@@ -62,7 +62,7 @@ router.put(
   upload.single("thumbnail"),
   updateCourse
 );
-router.delete("/admin/courses/:id", authenticateToken, isAdmin, deleteCourse);
+router.delete("/courses/:id", authenticateToken, isAdmin, deleteCourse);
 
 // Admin chapter management
 router.get(
