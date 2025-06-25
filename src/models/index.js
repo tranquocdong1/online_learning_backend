@@ -6,6 +6,7 @@ const Course = require('./Course');
 const PasswordReset = require('./PasswordReset');
 const Chapter = require('./Chapter');
 const Lesson = require('./Lesson');
+const LessonProgress = require('./LessonProgress');
 
 const models = {
   Admin,
@@ -13,6 +14,7 @@ const models = {
   Category,
   Course,
   Lesson,
+  LessonProgress,
   Chapter,
   PasswordReset,
 };
