@@ -7,6 +7,7 @@ const PasswordReset = require('./PasswordReset');
 const Chapter = require('./Chapter');
 const Lesson = require('./Lesson');
 const LessonProgress = require('./LessonProgress');
+const Comment = require('./Comment');
 
 const models = {
   Admin,
@@ -17,6 +18,7 @@ const models = {
   LessonProgress,
   Chapter,
   PasswordReset,
+  Comment,
 };
 
 // Associations
