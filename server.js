@@ -7,6 +7,8 @@ const authRoutes = require('./src/routes/auth');
 const userRoutes = require('./src/routes/user');
 const path = require('path');
 const courseRoutes = require('./src/routes/courseRoutes');
+const categoryRoutes = require('./src/routes/categoryRoutes');
+const contentRoutes = require('./src/routes/contentRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -34,6 +36,8 @@ app.use('/auth', authRoutes);
 app.use('/users', userRoutes);     
 app.use('/admin', adminRoutes);    
 app.use('/api', courseRoutes);
+app.use('/api', categoryRoutes);
+app.use('/api', contentRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

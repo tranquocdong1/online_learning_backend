@@ -119,6 +119,28 @@ const getLessons = async (req, res) => {
   }
 };
 
+const getLessonById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const lesson = await Lesson.findByPk(id);
+
+    if (!lesson) {
+      return res.status(404).json({ message: "Lesson not found" });
+    }
+
+    res.json({
+      ...lesson.toJSON(),
+      video_url: lesson.video_url
+        ? `${req.protocol}://${req.get("host")}/uploads/${lesson.video_url}`
+        : null,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 const createLesson = async (req, res) => {
   try {
     const { chapterId } = req.params;
@@ -199,4 +221,5 @@ module.exports = {
   createLesson,
   updateLesson,
   deleteLesson,
+  getLessonById,
 };
