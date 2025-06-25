@@ -8,6 +8,7 @@ const Chapter = require('./Chapter');
 const Lesson = require('./Lesson');
 const LessonProgress = require('./LessonProgress');
 const Comment = require('./Comment');
+const Rating = require('./Rating');
 
 const models = {
   Admin,
@@ -15,6 +16,7 @@ const models = {
   Category,
   Course,
   Lesson,
+  Rating,
   LessonProgress,
   Chapter,
   PasswordReset,

@@ -11,6 +11,7 @@ const categoryRoutes = require('./src/routes/categoryRoutes');
 const contentRoutes = require('./src/routes/contentRoutes');
 const progressRoutes = require('./src/routes/progressRoutes');
 const commentRoutes = require('./src/routes/commentRoutes');
+const ratingRoutes = require('./src/routes/ratingRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -42,6 +43,7 @@ app.use('/api', categoryRoutes);
 app.use('/api', contentRoutes);
 app.use('/api', progressRoutes);
 app.use('/api', commentRoutes);
+app.use('/api', ratingRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
