@@ -1,4 +1,4 @@
-const { Category } = require('../models');
+const { Category, Course } = require('../models');
 
 const getCategories = async (req, res) => {
   try {
@@ -85,18 +85,31 @@ const deleteCategory = async (req, res) => {
   }
 };
 
-// ✅ Hàm mới cho user
 const getPublicCategories = async (req, res) => {
   try {
     const categories = await Category.findAll({
-      attributes: ['id', 'name', 'description'], // ✅ THÊM description vào
-      order: [['created_at', 'DESC']],
+      attributes: [
+        "id",
+        "name", 
+        "description",
+        // ✅ Thêm courseCount bằng subquery
+        [
+          require("sequelize").literal(`(
+            SELECT COUNT(*)
+            FROM courses
+            WHERE courses.category_id = Category.id
+            AND courses.status = 'active'
+          )`),
+          "courseCount"
+        ]
+      ],
+      order: [["created_at", "DESC"]]
     });
 
     res.json({ data: categories });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching categories:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
