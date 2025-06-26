@@ -16,17 +16,35 @@ const getLessonRating = async (req, res) => {
   }
 };
 
+const getLessonRatingsList = async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+    const ratings = await Rating.findAll({
+      where: { lesson_id: lessonId },
+      include: [{
+        model: require('../models/User'),
+        attributes: ['username'], // Chỉ lấy username để hiển thị
+      }],
+      attributes: ['id', 'rating', 'created_at'],
+    });
+    res.json({ ratings });
+  } catch (error) {
+    console.error('Get ratings list error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const createOrUpdateRating = async (req, res) => {
   try {
-    const { user } = req; // Lấy toàn bộ req.user
+    const { user } = req;
     if (!user || !user.id) {
       return res.status(401).json({ message: 'User not authenticated' });
     }
-    const userId = user.id; // Lấy userId từ object user
+    const userId = user.id;
     const { lessonId } = req.params;
     const { rating } = req.body;
 
-    console.log('User ID:', userId, 'Lesson ID:', lessonId, 'Rating:', rating); // Debug
+    console.log('User ID:', userId, 'Lesson ID:', lessonId, 'Rating:', rating);
 
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ message: 'Rating must be between 1 and 5' });
@@ -53,4 +71,4 @@ const createOrUpdateRating = async (req, res) => {
   }
 };
 
-module.exports = { getLessonRating, createOrUpdateRating };
+module.exports = { getLessonRating, getLessonRatingsList, createOrUpdateRating };
