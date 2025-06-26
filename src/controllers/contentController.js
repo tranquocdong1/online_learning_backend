@@ -10,11 +10,19 @@ const getChapters = async (req, res) => {
 
     const chapters = await Chapter.findAll({
       where: { course_id: courseId },
-      order_number: [["order_number", "ASC"]],
+      order: [["order_number", "ASC"]],
       attributes: ["id", "title", "order_number", "created_at", "updated_at"],
     });
 
-    res.json({ data: chapters });
+    // Tính số lượng bài học cho mỗi chapter
+    const chaptersWithLessonCount = await Promise.all(
+      chapters.map(async (chapter) => {
+        const lessonCount = await Lesson.count({ where: { chapter_id: chapter.id } });
+        return { ...chapter.toJSON(), lesson_count: lessonCount };
+      })
+    );
+
+    res.json({ data: chaptersWithLessonCount });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });

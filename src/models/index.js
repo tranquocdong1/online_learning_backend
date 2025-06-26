@@ -25,5 +25,7 @@ const models = {
 
 // Associations
 PasswordReset.belongsTo(User, { foreignKey: 'email', targetKey: 'email' });
+Chapter.hasMany(Lesson, { foreignKey: "chapter_id", as: "lessons" });
+Lesson.belongsTo(Chapter, { foreignKey: "chapter_id" });
 
 module.exports = { sequelize, ...models };

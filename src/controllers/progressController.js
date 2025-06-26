@@ -1,4 +1,4 @@
-const { LessonProgress } = require("../models");
+const { LessonProgress, Chapter, Lesson } = require("../models");
 
 const getProgressByUser = async (req, res) => {
   try {
@@ -19,7 +19,6 @@ const updateProgress = async (req, res) => {
     const { userId, lessonId } = req.params;
     const { status } = req.body;
 
-    // Xác thực trạng thái
     if (!["completed", "in_progress", "not_started"].includes(status)) {
       return res.status(400).json({ message: "Invalid status value" });
     }
@@ -49,4 +48,24 @@ const updateProgress = async (req, res) => {
   }
 };
 
-module.exports = { getProgressByUser, updateProgress };
+// Thêm endpoint mới để lấy số lượng học viên
+const getCourseProgress = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const chapters = await Chapter.findAll({ where: { course_id: courseId } });
+    const chapterIds = chapters.map((chapter) => chapter.id);
+    const lessons = await Lesson.findAll({ where: { chapter_id: chapterIds } });
+    const lessonIds = lessons.map((lesson) => lesson.id);
+
+    const progressCount = await LessonProgress.count({
+      where: { lesson_id: lessonIds },
+    });
+
+    res.json({ data: { enrolledUsers: progressCount } });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { getProgressByUser, updateProgress, getCourseProgress };
