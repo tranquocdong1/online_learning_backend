@@ -1,4 +1,11 @@
+//controllers/contentController.js
 const { Course, Chapter, Lesson } = require("../models");
+const ffmpeg = require("fluent-ffmpeg");
+const path = require("path");
+
+// Đường dẫn cố định đến ffprobe.exe trong dự án
+const ffprobePath = path.join(__dirname, "..", "..", "ffmpeg", "ffmpeg-master-latest-win64-gpl-shared", "bin", "ffprobe.exe");
+ffmpeg.setFfprobePath(ffprobePath);
 
 const getChapters = async (req, res) => {
   try {
@@ -14,15 +21,32 @@ const getChapters = async (req, res) => {
       attributes: ["id", "title", "order_number", "created_at", "updated_at"],
     });
 
-    // Tính số lượng bài học cho mỗi chapter
-    const chaptersWithLessonCount = await Promise.all(
+    // Tính số lượng bài học và tổng thời lượng cho mỗi chapter
+    const chaptersWithDetails = await Promise.all(
       chapters.map(async (chapter) => {
-        const lessonCount = await Lesson.count({ where: { chapter_id: chapter.id } });
-        return { ...chapter.toJSON(), lesson_count: lessonCount };
+        const lessons = await Lesson.findAll({
+          where: { chapter_id: chapter.id },
+          attributes: ["duration"],
+        });
+        const lessonCount = lessons.length;
+        const totalDurationSeconds = lessons.reduce(
+          (total, lesson) => total + (lesson.duration || 0),
+          0
+        );
+        const hours = Math.floor(totalDurationSeconds / 3600);
+        const minutes = Math.floor((totalDurationSeconds % 3600) / 60);
+        const formattedDuration = `${hours > 0 ? `${hours} giờ ` : ""}${minutes} phút`;
+
+        return {
+          ...chapter.toJSON(),
+          lesson_count: lessonCount,
+          total_duration: formattedDuration,
+          total_duration_seconds: totalDurationSeconds, // Thêm trường này
+        };
       })
     );
 
-    res.json({ data: chaptersWithLessonCount });
+    res.json({ data: chaptersWithDetails });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -102,11 +126,12 @@ const getLessons = async (req, res) => {
 
     const lessons = await Lesson.findAll({
       where: { chapter_id: chapterId },
-      order_number: [["order_number", "ASC"]],
+      order: [["order_number", "ASC"]], // Sửa lỗi chính tả: order_number thay vì order_number
       attributes: [
         "id",
         "title",
         "video_url",
+        "duration",
         "order_number",
         "created_at",
         "updated_at",
@@ -148,7 +173,6 @@ const getLessonById = async (req, res) => {
   }
 };
 
-
 const createLesson = async (req, res) => {
   try {
     const { chapterId } = req.params;
@@ -164,11 +188,28 @@ const createLesson = async (req, res) => {
       return res.status(400).json({ message: "Title is required" });
     }
 
+    let duration = 0;
+    if (req.file) {
+      const videoPath = req.file.path; // Đường dẫn đầy đủ đến file upload
+      const durationPromise = new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(videoPath, (err, metadata) => {
+          if (err) {
+            console.error("Error extracting duration:", err);
+            reject(err);
+          } else {
+            resolve(Math.round(metadata.format.duration)); // Làm tròn đến giây
+          }
+        });
+      });
+      duration = await durationPromise; // Chờ lấy duration
+    }
+
     const lesson = await Lesson.create({
       chapter_id: chapterId,
       title,
       video_url,
-      order_number,
+      order_number: order_number || 1,
+      duration: duration || 0,
     });
     res.status(201).json({ message: "Lesson created successfully", lesson });
   } catch (error) {
@@ -190,10 +231,27 @@ const updateLesson = async (req, res) => {
       return res.status(404).json({ message: "Lesson not found" });
     }
 
+    let duration = lesson.duration;
+    if (req.file) {
+      const videoPath = req.file.path;
+      const durationPromise = new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(videoPath, (err, metadata) => {
+          if (err) {
+            console.error("Error extracting duration:", err);
+            reject(err);
+          } else {
+            resolve(Math.round(metadata.format.duration));
+          }
+        });
+      });
+      duration = await durationPromise; // Cập nhật duration nếu có file mới
+    }
+
     await lesson.update({
       title: title || lesson.title,
       video_url: video_url || lesson.video_url,
       order_number: order_number || lesson.order_number,
+      duration: duration,
     });
     res.json({ message: "Lesson updated successfully", lesson });
   } catch (error) {
